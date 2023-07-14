@@ -140,13 +140,17 @@ rec_parse_expr <- function(obj, bound_names) {
         func_is_infix <- NULL
 
         if (symbol_str %in% c("==", "&", "|", "<=", "<", ">=", ">", "+",
-                              "-", "*", "/")) {
+                              "-", "*", "/", "%%")) {
             if (symbol_str == "==") {
                 func_str <- "="
             } else if (symbol_str == "&") {
                 func_str <- "and"
             } else if (symbol_str == "|") {
                 func_str <- "or"
+            } else if (symbol_str == "/") {
+                func_str <- "div"
+            } else if (symbol_str == "%%") {
+                func_str <- "mod"
             } else {
                 func_str <- symbol_str
             }
