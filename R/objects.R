@@ -17,95 +17,84 @@ Survey <- function(form_id, form_version, form_title, ...) {
         form_id = form_id,
         form_version = form_version,
         form_title = form_title,
-        block = Block(...)
+        block = c(...)
     )
-}
-
-Block <- function(...) {
-    list(.type = "block", ...)
 }
 
 ChoiceList <- function(name, ...) {
-    list(.type = "choice_list", name = name, ...)
+    list(list(
+        .type = "choice_list",
+        name = substitute(name),
+        block = c(...)
+    ))
 }
 
 Choice <- function(value, label, ...) {
-    list(.type = "row", value = value, label = label, ...)
+    list(list(
+        .type = "choices_row",
+        value = value,
+        label = label,
+        args = args(...)
+    ))
 }
 
 If <- function(cond, block) {
-    list(.type = "if",
-         cond = substitute(cond),
-         block = if (block[[".type"]] == "block") {
-             block
-         } else {
-             Block(block)
-         })
+    list(list(
+        .type = "if",
+        cond = substitute(cond),
+        block = block
+    ))
 }
 
 IfElse <- function(cond, if_block, else_block) {
-    list(.type = "ifelse",
-         cond = substitute(cond),
-         if_block = if (if_block[[".type"]] == "block") {
-             if_block
-         } else {
-             Block(if_block)
-         },
-         else_block = if (else_block[[".type"]] == "block") {
-             else_block
-         } else {
-             Block(else_block)
-         })
+    list(list(
+        .type = "ifelse",
+        cond = substitute(cond),
+        if_block = if_block,
+        else_block = else_block
+    ))
 }
 
 Match <- function(name, ...) {
-    list(.type = "match", ...)
+    list(list(.type = "match", ...))
 }
 
 Group <- function(name, label, block, ...) {
-    list(
+    list(list(
         .type = "group",
         name = substitute(name),
         label = label,
-        block = if (block[[".type"]] == "block") {
-            block
-        } else {
-            Block(block)
-        },
+        block = block,
         args = args(...)
-    )
+    ))
 }
 
 Repeat <- function(name, label, block, ...) {
-    list(
+    list(list(
         .type = "repeat",
         name = substitute(name),
         label = label,
-        block = if (block[[".type"]] == "block") {
-            block
-        } else {
-            Block(block)
-        },
+        block = block,
         args = args(...)
-    )
+    ))
 }
 
 Ask <- function(name, type, label, ...) {
-    list(
-        .type = "row",
+    list(list(
+        .type = "survey_row",
         name = substitute(name),
         type = type,
         label = label,
         args = args(...)
-    )
+    ))
 }
 
 Integer <- function() {
-    "integer"
+    list("integer")
 }
 
 Text <- function() {
-    "text"
+    list("text")
 }
 
 SelectOne <- function(list_name) {
@@ -117,36 +106,38 @@ SelectMultiple <- function(list_name) {
 }
 
 Date <- function() {
-    "date"
+    list("date")
 }
 
 DateTime <- function() {
-    "datetime"
+    list("datetime")
 }
 
 Time <- function() {
-    "time"
+    list("time")
 }
 
 Geopoint <- function() {
-    "geopoint"
+    list("geopoint")
 }
 
 Note <- function(name, label, ...) {
-    list(
-        .type = "row",
+    list(list(
+        .type = "survey_row",
         name = substitute(name),
-        label = "note",
+        type = "note",
+        label = label,
         args = args(...)
-    )
+    ))
 }
 
 Calculate <- function(name, calculation, ...) {
-    list(
-        .type = "row",
+    list(list(
+        .type = "survey_row",
         name = substitute(name),
+        type = list("calculate"),
         calculation = substitute(calculation),
         args = args(...)
-    )
+    ))
 }
 
