@@ -304,6 +304,26 @@ parse_survey <- function(obj,
 
             new_row <- list()
 
+            if (!is.null(label)) {
+                variable_refs <- regmatches(
+                    label,
+                    gregexpr("[$][{][^}]+[}]", label)
+                ) |> unlist()
+
+                for (ref in variable_refs) {
+                    ref_name <- substr(ref, 3, nchar(ref) - 1)
+
+                    if (!(ref_name %in% known_variables)) {
+                        stop(sprintf(
+                            "Variable '%s' is used but not defined.",
+                            ref_name
+                        ))
+                    }
+                }
+
+                new_row[["label"]] <- label
+            }
+
             if (!is.null(calculation)) {
                 new_row[["calculation"]] <- rec_parse_expr(
                     calculation,
@@ -347,10 +367,6 @@ parse_survey <- function(obj,
                 } else {
                     new_row[["type"]] <- type[[1]]
                 }
-            }
-
-            if (!is.null(label)) {
-                new_row[["label"]] <- label
             }
 
             new_row <- c(new_row, row_args(item[["args"]],
