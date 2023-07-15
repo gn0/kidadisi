@@ -1,15 +1,27 @@
 require("dplyr")
 require("writexl")
 
+form_id <- function(obj) {
+    result <- deparse(obj) |> gsub("^\"|\"$", "", x = _)
+
+    if (grepl("[^A-Za-z0-9_]", result)) {
+        stop("The form ID can only contain letters, numbers, and '_'.")
+    }
+
+    result
+}
+
 form_version <- function(obj) {
-    if (is.numeric(obj) || grepl("^[0-9]+$", obj)) {
-        obj
-    } else if (obj == "auto") {
+    result <- deparse(obj) |> gsub("^\"|\"$", "", x = _)
+
+    if (grepl("^[0-9]+$", result)) {
+        result
+    } else if (result == "auto") {
         format(Sys.time(), "%y%m%d%H%M", tz = "UTC")
     } else {
         stop(paste(
-            "Form version must be either a number or 'auto' but it is",
-            sprintf("'%s'.", obj)
+            "Form version must be either an integer or 'auto' but it",
+            sprintf("is '%s'.", result)
         ))
     }
 }
@@ -28,13 +40,26 @@ rows_to_data_frame <- function(rows) {
 }
 
 row_args <- function(obj, known_variables) {
-    lapply(obj, function(arg) {
-        if (typeof(arg) %in% c("symbol", "language")) {
-            rec_parse_expr(arg, bound_names = known_variables)
-        } else {
-            arg
-        }
-    })
+    mapply(
+        function(arg_name, arg_value) {
+            if (typeof(arg_value) %in% c("symbol", "language")) {
+                if (arg_name %in% c("calculation", "constraint",
+                                    "relevance", "repeat_count")) {
+                    rec_parse_expr(
+                        arg_value,
+                        bound_names = known_variables
+                    )
+                } else {
+                    deparse(arg_value)
+                }
+            } else {
+                arg_value
+            }
+        },
+        names(obj),
+        obj,
+        SIMPLIFY = FALSE
+    )
 }
 
 parse_survey <- function(obj,
@@ -43,7 +68,7 @@ parse_survey <- function(obj,
                          inside_choice_list = FALSE) {
     if (typeof(obj) != "list"
         || any(sapply(obj, function(item) typeof(item) != "list"))) {
-        cat(sprintf(
+        stop(sprintf(
             "Input should be list of lists but it is '%s'.\n",
             deparse(obj)
         ))
@@ -351,8 +376,8 @@ survey_to_xlsform <- function(obj) {
         stop("Input must be created with the Survey() function.")
     }
 
-    settings <- data.frame(
-        form_id = obj[["form_id"]],
+    settings <- tibble(
+        form_id = form_id(obj[["form_id"]]),
         form_version = form_version(obj[["form_version"]]),
         form_title = obj[["form_title"]]
     )

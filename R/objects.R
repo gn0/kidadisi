@@ -14,8 +14,8 @@ args <- function(...) {
 Survey <- function(form_id, form_version, form_title, ...) {
     list(
         .type = "survey",
-        form_id = form_id,
-        form_version = form_version,
+        form_id = substitute(form_id),
+        form_version = substitute(form_version),
         form_title = form_title,
         block = c(...)
     )
