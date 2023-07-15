@@ -37,7 +37,10 @@ row_args <- function(obj, known_variables) {
     })
 }
 
-parse_survey <- function(obj, known_choice_lists, known_variables) {
+parse_survey <- function(obj,
+                         known_choice_lists,
+                         known_variables,
+                         inside_choice_list = FALSE) {
     if (typeof(obj) != "list"
         || any(sapply(obj, function(item) typeof(item) != "list"))) {
         cat(sprintf(
@@ -71,7 +74,8 @@ parse_survey <- function(obj, known_choice_lists, known_variables) {
             result <- parse_survey(
                 item[["block"]],
                 known_choice_lists = known_choice_lists,
-                known_variables = known_variables
+                known_variables = known_variables,
+                inside_choice_list = TRUE
             )
 
             if (length(result[["survey_rows"]]) > 0) {
@@ -135,7 +139,7 @@ parse_survey <- function(obj, known_choice_lists, known_variables) {
             )
 
             if (length(result[["choices_rows"]]) > 0) {
-                stop("Group() cannot contain Choice().")
+                stop("Group() cannot contain ChoiceList().")
             }
 
             survey_rows <- c(
@@ -158,7 +162,7 @@ parse_survey <- function(obj, known_choice_lists, known_variables) {
             )
 
             if (length(result[["choices_rows"]]) > 0) {
-                stop("If() cannot contain Choice().")
+                stop("If() cannot contain ChoiceList().")
             }
 
             new_rows <- lapply(
@@ -198,7 +202,7 @@ parse_survey <- function(obj, known_choice_lists, known_variables) {
 
             if (length(if_result[["choices_rows"]]) > 0
                 || length(else_result[["choices_rows"]]) > 0) {
-                stop("IfElse() cannot contain Choice().")
+                stop("IfElse() cannot contain ChoiceList().")
             }
 
             new_rows <- c(
@@ -245,6 +249,10 @@ parse_survey <- function(obj, known_choice_lists, known_variables) {
             # TODO
             stop("Match() is not implemented yet.")
         } else if (item_type == "choices_row") {
+            if (!inside_choice_list) {
+                stop("Choice() can only be used inside ChoiceList().")
+            }
+
             value <- item[["value"]]
             label <- item[["label"]]
 
