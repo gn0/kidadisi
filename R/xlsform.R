@@ -92,6 +92,29 @@ parse_survey <- function(obj, known_choice_lists, known_variables) {
             name <- deparse(item[["name"]])
             label <- item[["label"]]
 
+            if (length(item[["args"]]) > 0
+                && (is.null(names(item[["args"]]))
+                    || "" %in% names(item[["args"]]))) {
+                func_name <- item_type
+                substr(func_name, 1, 1) <- substr(func_name, 1, 1) |>
+                    toupper()
+
+                stop(sprintf(
+                    paste("%s(%s, ...) was given unexpected unnamed",
+                          "arguments.  Did you forget to combine the",
+                          "elements in the %s with c(), e.g., as",
+                          "%s(%s, %s, c(Ask(...), Ask(...)))?"),
+                    func_name,
+                    name,
+                    ifelse(item_type == "repeat",
+                           "repeat group",
+                           "group"),
+                    func_name,
+                    name,
+                    deparse(label)
+                ))
+            }
+
             begin_row <- list()
 
             begin_row[["name"]] <- name
