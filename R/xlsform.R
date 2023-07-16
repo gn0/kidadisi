@@ -304,33 +304,6 @@ parse_survey <- function(obj,
 
             new_row <- list()
 
-            if (!is.null(label)) {
-                variable_refs <- regmatches(
-                    label,
-                    gregexpr("[$][{][^}]+[}]", label)
-                ) |> unlist()
-
-                for (ref in variable_refs) {
-                    ref_name <- substr(ref, 3, nchar(ref) - 1)
-
-                    if (!(ref_name %in% known_variables)) {
-                        stop(sprintf(
-                            "Variable '%s' is used but not defined.",
-                            ref_name
-                        ))
-                    }
-                }
-
-                new_row[["label"]] <- label
-            }
-
-            if (!is.null(calculation)) {
-                new_row[["calculation"]] <- rec_parse_expr(
-                    calculation,
-                    bound_names = known_variables
-                )
-            }
-
             if (name %in% known_variables) {
                 stop(sprintf(
                     "Variable '%s' is defined more than once.", name
@@ -338,7 +311,6 @@ parse_survey <- function(obj,
             }
 
             new_row[["name"]] <- name
-            known_variables <- c(known_variables, name)
 
             if (typeof(type) == "closure") {
                 stop(sprintf(
@@ -369,11 +341,47 @@ parse_survey <- function(obj,
                 }
             }
 
-            new_row <- c(new_row, row_args(item[["args"]],
-                                           known_variables)) |>
-                lapply(as.character)
+            if (!is.null(label)) {
+                variable_refs <- regmatches(
+                    label,
+                    gregexpr("[$][{][^}]+[}]", label)
+                ) |> unlist()
+
+                for (ref in variable_refs) {
+                    ref_name <- substr(ref, 3, nchar(ref) - 1)
+
+                    if (!(ref_name %in% known_variables)) {
+                        stop(sprintf(
+                            "Variable '%s' is used but not defined.",
+                            ref_name
+                        ))
+                    }
+                }
+
+                new_row[["label"]] <- label
+            }
+
+            item_args <- row_args(item[["args"]], known_variables)
+
+            if (is.null(item_args[["required"]])) {
+                if (new_row[["type"]] %in% c("calculate", "note")) {
+                    item_args[["required"]] <- "no"
+                } else {
+                    item_args[["required"]] <- "yes"
+                }
+            }
+
+            if (!is.null(calculation)) {
+                new_row[["calculation"]] <- rec_parse_expr(
+                    calculation,
+                    bound_names = known_variables
+                )
+            }
+
+            new_row <- c(new_row, item_args) |> lapply(as.character)
 
             survey_rows <- c(survey_rows, list(new_row))
+            known_variables <- c(known_variables, name)
         } else {
             stop(sprintf("Unrecognized object type: %s.", item_type))
         }
