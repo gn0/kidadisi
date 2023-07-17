@@ -124,23 +124,47 @@ to_xlsform_string <- function(str) {
     )
 }
 
-rec_parse_expr <- function(obj, bound_names) {
-    if (typeof(obj) == "language") {
-        if (typeof(obj[[1]]) != "symbol") {
-            stop(sprintf(
-                "Object '%s' does not start with a symbol.",
-                deparse(obj[[1]])
-            ))
-        } else if (length(obj) == 1) {
-            stop(sprintf("Object '%s' has length 1.", deparse(obj)))
-        }
+parse_expr <- function(obj, bound_names) {
+    if (!is_quosure(obj)) {
+        stop(sprintf(
+            "First argument must be a quosure but its type is '%s'.",
+            typeof(obj)
+        ))
+    }
 
-        symbol_str <- deparse(obj[[1]])
+    if (quo_is_call(obj)) {
+        obj_expr <- quo_get_expr(obj)
+
+        symbol_str <- deparse(obj_expr[[1]])
         func_str <- NULL
         func_is_infix <- NULL
 
-        if (symbol_str %in% c("==", "&", "|", "<=", "<", ">=", ">", "+",
-                              "-", "*", "/", "%%")) {
+        if (symbol_str == "~") {
+            # NOTE Quosures in `rlang` represent {{ x }} as formulas:
+            #
+            # >>> x <- "foo"
+            # >>> quo({{ x }} == 3)
+            # <quosure>
+            # expr: ^(^"foo") == 3
+            # env:  global
+            # >>> quo({{ x }} == 3) |> quo_get_expr()
+            # (~"foo") == 3
+            #
+            # So essentially we want to treat `~` as variable lookup.
+            #
+
+            if (length(obj_expr) != 2) {
+                stop(sprintf(
+                    paste("Expression should consist of `~` and a",
+                          "string but it is '%s'."),
+                    deparse(obj_expr)
+                ))
+            }
+
+            func_str <- "~"
+            func_is_infix <- FALSE
+        } else if (symbol_str %in% c("==", "&", "|", "<=", "<", ">=",
+                                     ">", "+", "-", "*", "/", "%%")) {
             if (symbol_str == "==") {
                 func_str <- "="
             } else if (symbol_str == "&") {
@@ -176,28 +200,37 @@ rec_parse_expr <- function(obj, bound_names) {
             func_is_infix <- FALSE
         }
 
-        arguments <- sapply(
-            2:length(obj),
-            function(index) rec_parse_expr(obj[[index]], bound_names)
-        )
-
-        if (func_str == "(") {
-            sprintf("(%s)", paste0(arguments, collapse = ", "))
-        } else if (func_is_infix) {
-            paste(
-                arguments[1],
-                func_str,
-                arguments[2:length(arguments)]
-            )
+        if (func_str == "~") {
+            sprintf("${%s}", obj_expr[[2]])
         } else {
-            sprintf(
-                "%s(%s)",
-                func_str,
-                paste0(arguments, collapse = ", ")
+            arguments <- sapply(
+                2:length(obj_expr),
+                function(index) {
+                    parse_expr(
+                        obj_expr[[index]] |> new_quosure(),
+                        bound_names
+                    )
+                }
             )
+
+            if (func_str == "(") {
+                sprintf("(%s)", paste0(arguments, collapse = ", "))
+            } else if (func_is_infix) {
+                paste(
+                    arguments[1],
+                    func_str,
+                    arguments[2:length(arguments)]
+                )
+            } else {
+                sprintf(
+                    "%s(%s)",
+                    func_str,
+                    paste0(arguments, collapse = ", ")
+                )
+            }
         }
-    } else if (typeof(obj) == "symbol") {
-        symbol_str <- deparse(obj)
+    } else if (quo_is_symbol(obj)) {
+        symbol_str <- quo_text(obj)
 
         if (symbol_str == ".") {
             symbol_str
@@ -214,28 +247,19 @@ rec_parse_expr <- function(obj, bound_names) {
 
             sprintf("${%s}", symbol_str)
         }
-    } else if (typeof(obj) %in% c("double", "integer")) {
-        obj
-    } else if (typeof(obj) == "character") {
-        to_xlsform_string(obj)
     } else {
-        stop(sprintf(
-            "Object '%s' has unrecognized type: %s.",
-            deparse(obj),
-            typeof(obj)
-        ))
-    }
-}
+        value <- quo_get_expr(obj)
 
-parse_expr <- function(fml, bound_names = c()) {
-    if (typeof(fml) != "language"
-        || deparse(fml[[1]]) != "~"
-        || length(fml) != 2) {
-        stop(paste(
-            "The expression must be a formula with an empty",
-            "left-hand side, e.g.: ~ foo + bar > 4"
-        ))
+        if (typeof(value) %in% c("double", "integer")) {
+            value
+        } else if (typeof(value) == "character") {
+            to_xlsform_string(value)
+        } else {
+            stop(sprintf(
+                "Object '%s' has unrecognized type: %s.",
+                deparse(value),
+                typeof(value)
+            ))
+        }
     }
-
-    rec_parse_expr(fml[[2]], bound_names)
 }

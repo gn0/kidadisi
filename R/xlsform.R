@@ -1,27 +1,84 @@
+require("rlang")
 require("dplyr")
 require("writexl")
 
-form_id <- function(obj) {
-    result <- deparse(obj) |> gsub("^\"|\"$", "", x = _)
+parse_form_id <- function(obj) {
+    if (!is_quosure(obj)) {
+        stop(sprintf(
+            "Argument must be a quosure but its type is '%s'.",
+            typeof(obj)
+        ))
+    }
 
-    if (grepl("[^A-Za-z0-9_]", result)) {
+    if (quo_is_call(obj)) {
+        result <- NULL
+    } else if (quo_is_symbol(obj)) {
+        result <- quo_text(obj)
+    } else {
+        result <- quo_get_expr(obj) |> as.character()
+    }
+
+    if (is.null(result) || grepl("[^A-Za-z0-9_]", result)) {
         stop("The form ID can only contain letters, numbers, and '_'.")
     }
 
     result
 }
 
-form_version <- function(obj) {
-    result <- deparse(obj) |> gsub("^\"|\"$", "", x = _)
+parse_form_version <- function(obj) {
+    if (!is_quosure(obj)) {
+        stop(sprintf(
+            "Argument must be a quosure but its type is '%s'.",
+            typeof(obj)
+        ))
+    }
 
-    if (grepl("^[0-9]+$", result)) {
+    if (quo_is_call(obj)) {
+        result <- NULL
+    } else if (quo_is_symbol(obj)) {
+        result <- quo_text(obj)
+    } else {
+        result <- quo_get_expr(obj) |> as.character()
+    }
+
+    if (!is.null(result) && grepl("^[0-9]+$", result)) {
         result
-    } else if (result == "auto") {
+    } else if (!is.null(result) && result == "auto") {
         format(Sys.time(), "%y%m%d%H%M", tz = "UTC")
     } else {
         stop(paste(
             "Form version must be either an integer or 'auto' but it",
-            sprintf("is '%s'.", result)
+            sprintf("is '%s'.", quo_text(obj))
+        ))
+    }
+}
+
+parse_identifier <- function(obj) {
+    if (!is_quosure(obj)) {
+        stop(sprintf(
+            "Argument must be a quosure but its type is '%s'.",
+            typeof(obj)
+        ))
+    }
+
+    result <- if (quo_is_call(obj)) {
+        NULL
+    } else if (quo_is_symbol(obj)) {
+        quo_text(obj)
+    } else {
+        quo_get_expr(obj) |> as.character()
+    }
+
+    if (!is.null(result) && grepl("^[A-Za-z_][A-Za-z_0-9]*$", result)) {
+        result
+    } else {
+        stop(sprintf(
+            paste(
+                "Identifier cannot start with a number and it must",
+                "consist of letters, numbers, and '_', but it is",
+                "'%s' instead."
+            ),
+            if (is.null(result)) { quo_text(obj) } else { result }
         ))
     }
 }
@@ -40,20 +97,30 @@ rows_to_data_frame <- function(rows) {
 }
 
 row_args <- function(obj, known_variables) {
+    if (!is_quosures(obj)) {
+        stop(sprintf(
+            paste(
+                "First argument must be a list of quosures but its",
+                "type is '%s' instead."
+            ),
+            typeof(obj)
+        ))
+    }
+
     mapply(
         function(arg_name, arg_value) {
-            if (typeof(arg_value) %in% c("symbol", "language")) {
+            if (quo_is_symbolic(arg_value)) {
                 if (arg_name %in% c("calculation", "constraint",
                                     "relevance", "repeat_count")) {
-                    rec_parse_expr(
+                    parse_expr(
                         arg_value,
                         bound_names = known_variables
                     )
                 } else {
-                    deparse(arg_value)
+                    quo_text(arg_value)
                 }
             } else {
-                arg_value
+                quo_get_expr(arg_value) |> eval()
             }
         },
         names(obj),
@@ -88,7 +155,7 @@ parse_survey <- function(obj,
         item_type <- item[[".type"]]
 
         if (item_type == "choice_list") {
-            name <- deparse(item[["name"]])
+            name <- parse_identifier(item[["name"]])
 
             if (name %in% known_choice_lists) {
                 stop(sprintf(
@@ -118,7 +185,7 @@ parse_survey <- function(obj,
             choices_rows <- c(choices_rows, new_rows)
             known_choice_lists <- c(known_choice_lists, name)
         } else if (item_type %in% c("group", "repeat")) {
-            name <- deparse(item[["name"]])
+            name <- parse_identifier(item[["name"]])
             label <- item[["label"]]
 
             if (length(item[["args"]]) > 0
@@ -175,7 +242,7 @@ parse_survey <- function(obj,
             )
             known_variables <- result[["known_variables"]]
         } else if (item_type == "if") {
-            cond <- rec_parse_expr(
+            cond <- parse_expr(
                 item[["cond"]],
                 bound_names = known_variables
             )
@@ -208,7 +275,7 @@ parse_survey <- function(obj,
             survey_rows <- c(survey_rows, new_rows)
             known_variables <- result[["known_variables"]]
         } else if (item_type == "ifelse") {
-            cond <- rec_parse_expr(
+            cond <- parse_expr(
                 item[["cond"]],
                 bound_names = known_variables
             )
@@ -297,7 +364,7 @@ parse_survey <- function(obj,
 
             choices_rows <- c(choices_rows, list(new_row))
         } else if (item_type == "survey_row") {
-            name <- deparse(item[["name"]])
+            name <- parse_identifier(item[["name"]])
             type <- item[["type"]]
             label <- item[["label"]]
             calculation <- item[["calculation"]]
@@ -322,6 +389,7 @@ parse_survey <- function(obj,
                     name
                 ))
             } else if (!is.null(type)) {
+
                 if (type[[1]] %in% c("select_one", "select_multiple")) {
                     choice_list <- deparse(type[[2]])
 
@@ -372,7 +440,7 @@ parse_survey <- function(obj,
             }
 
             if (!is.null(calculation)) {
-                new_row[["calculation"]] <- rec_parse_expr(
+                new_row[["calculation"]] <- parse_expr(
                     calculation,
                     bound_names = known_variables
                 )
@@ -401,8 +469,8 @@ survey_to_xlsform <- function(obj) {
     }
 
     settings <- tibble(
-        form_id = form_id(obj[["form_id"]]),
-        form_version = form_version(obj[["form_version"]]),
+        form_id = parse_form_id(obj[["form_id"]]),
+        form_version = parse_form_version(obj[["form_version"]]),
         form_title = obj[["form_title"]]
     )
 

@@ -1,21 +1,16 @@
+require("rlang")
 
 #' Postpone the evaluation of arguments whose value is an expression.
 #'
 args <- function(...) {
-    result <- substitute(list(...)) |> as.list()
-
-    if (length(result) > 1) {
-        result[2:length(result)]
-    } else {
-        list()
-    }
+    enquos(...)
 }
 
 Survey <- function(form_id, form_version, form_title, ...) {
     list(
         .type = "survey",
-        form_id = substitute(form_id),
-        form_version = substitute(form_version),
+        form_id = enquo(form_id),
+        form_version = enquo(form_version),
         form_title = form_title,
         block = c(...)
     )
@@ -24,7 +19,7 @@ Survey <- function(form_id, form_version, form_title, ...) {
 ChoiceList <- function(name, ...) {
     list(list(
         .type = "choice_list",
-        name = substitute(name),
+        name = enquo(name),
         block = c(...)
     ))
 }
@@ -41,7 +36,7 @@ Choice <- function(value, label, ...) {
 If <- function(cond, block) {
     list(list(
         .type = "if",
-        cond = substitute(cond),
+        cond = enquo(cond),
         block = block
     ))
 }
@@ -49,7 +44,7 @@ If <- function(cond, block) {
 IfElse <- function(cond, if_block, else_block) {
     list(list(
         .type = "ifelse",
-        cond = substitute(cond),
+        cond = enquo(cond),
         if_block = if_block,
         else_block = else_block
     ))
@@ -62,7 +57,7 @@ Match <- function(name, ...) {
 Group <- function(name, label, block, ...) {
     list(list(
         .type = "group",
-        name = substitute(name),
+        name = enquo(name),
         label = label,
         block = block,
         args = args(...)
@@ -72,7 +67,7 @@ Group <- function(name, label, block, ...) {
 Repeat <- function(name, label, block, ...) {
     list(list(
         .type = "repeat",
-        name = substitute(name),
+        name = enquo(name),
         label = label,
         block = block,
         args = args(...)
@@ -82,7 +77,7 @@ Repeat <- function(name, label, block, ...) {
 Ask <- function(name, type, label, ...) {
     list(list(
         .type = "survey_row",
-        name = substitute(name),
+        name = enquo(name),
         type = type,
         label = label,
         args = args(...)
@@ -98,11 +93,11 @@ Text <- function() {
 }
 
 SelectOne <- function(list_name) {
-    list("select_one", substitute(list_name))
+    list("select_one", enquo(list_name))
 }
 
 SelectMultiple <- function(list_name) {
-    list("select_multiple", substitute(list_name))
+    list("select_multiple", enquo(list_name))
 }
 
 Date <- function() {
@@ -124,7 +119,7 @@ Geopoint <- function() {
 Note <- function(name, label, ...) {
     list(list(
         .type = "survey_row",
-        name = substitute(name),
+        name = enquo(name),
         type = "note",
         label = label,
         args = args(...)
@@ -134,9 +129,9 @@ Note <- function(name, label, ...) {
 Calculate <- function(name, calculation, ...) {
     list(list(
         .type = "survey_row",
-        name = substitute(name),
+        name = enquo(name),
         type = list("calculate"),
-        calculation = substitute(calculation),
+        calculation = enquo(calculation),
         args = args(...)
     ))
 }
