@@ -432,7 +432,9 @@ parse_survey <- function(obj,
             item_args <- row_args(item[["args"]], known_variables)
 
             if (is.null(item_args[["required"]])) {
-                if (new_row[["type"]] %in% c("calculate", "note")) {
+                if (new_row[["type"]] %in% c("calculate",
+                                             "calculate_here",
+                                             "note")) {
                     item_args[["required"]] <- "no"
                 } else {
                     item_args[["required"]] <- "yes"

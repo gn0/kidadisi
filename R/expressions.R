@@ -203,15 +203,19 @@ parse_expr <- function(obj, bound_names) {
         if (func_str == "~") {
             sprintf("${%s}", obj_expr[[2]])
         } else {
-            arguments <- sapply(
-                2:length(obj_expr),
-                function(index) {
-                    parse_expr(
-                        obj_expr[[index]] |> new_quosure(),
-                        bound_names
-                    )
-                }
-            )
+            arguments <- if (length(obj_expr) == 1) {
+                c()
+            } else {
+                sapply(
+                    2:length(obj_expr),
+                    function(index) {
+                        parse_expr(
+                            obj_expr[[index]] |> new_quosure(),
+                            bound_names
+                        )
+                    }
+                )
+            }
 
             if (func_str == "(") {
                 sprintf("(%s)", paste0(arguments, collapse = ", "))

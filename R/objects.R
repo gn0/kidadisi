@@ -64,6 +64,19 @@ Group <- function(name, label, block, ...) {
     ))
 }
 
+TimedGroup <- function(name, label, block, ...) {
+    name <- enquo(name) |> parse_identifier()
+
+    start_name <- paste0(name, "_start")
+    end_name <- paste0(name, "_end")
+    dur_name <- paste0(name, "_dur")
+
+    c(CalculateHere({{ start_name }}, once(duration())),
+      Group(name, label, block, ...),
+      CalculateHere({{ end_name }}, once(duration())),
+      Calculate({{ dur_name }}, {{ end_name }} - {{ start_name }}))
+}
+
 Repeat <- function(name, label, block, ...) {
     list(list(
         .type = "repeat",
@@ -131,6 +144,16 @@ Calculate <- function(name, calculation, ...) {
         .type = "survey_row",
         name = enquo(name),
         type = list("calculate"),
+        calculation = enquo(calculation),
+        args = args(...)
+    ))
+}
+
+CalculateHere <- function(name, calculation, ...) {
+    list(list(
+        .type = "survey_row",
+        name = enquo(name),
+        type = list("calculate_here"),
         calculation = enquo(calculation),
         args = args(...)
     ))
