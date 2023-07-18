@@ -164,8 +164,9 @@ parse_expr <- function(obj, bound_names) {
 
             func_str <- "~"
             func_is_infix <- FALSE
-        } else if (symbol_str %in% c("==", "&", "|", "<=", "<", ">=",
-                                     ">", "+", "-", "*", "/", "%%")) {
+        } else if (symbol_str %in% c("==", "!=", "&", "|", "<=", "<",
+                                     ">=", ">", "+", "-", "*", "/",
+                                     "%%")) {
             if (symbol_str == "==") {
                 func_str <- "="
             } else if (symbol_str == "&") {
