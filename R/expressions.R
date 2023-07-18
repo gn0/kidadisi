@@ -143,22 +143,27 @@ parse_call <- function(obj, bound_names) {
         # >>> quo({{ x }} == 3) |> quo_get_expr()
         # (~"foo") == 3
         #
-        # So essentially we want to treat `~` as variable lookup.
+        # So we want to treat `~` as variable lookup.
         #
 
-        if (length(obj_expr) != 2) {
+        if (length(obj_expr) != 2
+            || typeof(obj_expr[[2]]) != "character") {
             stop(sprintf(
-                paste("Expression should consist of `~` and a",
-                      "string but it is '%s'."),
+                paste(
+                    "Expression should consist of `~` and a",
+                    "string but it is '%s'."
+                ),
                 deparse(obj_expr)
             ))
         }
 
-        func_str <- "~"
-        func_is_infix <- FALSE
-    } else if (symbol_str %in% c("==", "!=", "&", "|", "<=", "<",
-                                 ">=", ">", "+", "-", "*", "/",
-                                 "%%")) {
+        variable_name <- obj_expr[[2]]
+
+        return(parse_symbol(sym(variable_name), bound_names))
+    }
+
+    if (symbol_str %in% c("==", "!=", "&", "|", "<=", "<", ">=", ">",
+                          "+", "-", "*", "/", "%%")) {
         if (symbol_str == "==") {
             func_str <- "="
         } else if (symbol_str == "&") {
@@ -194,38 +199,34 @@ parse_call <- function(obj, bound_names) {
         func_is_infix <- FALSE
     }
 
-    if (func_str == "~") {
-        sprintf("${%s}", obj_expr[[2]])
+    arguments <- if (length(obj_expr) == 1) {
+        c()
     } else {
-        arguments <- if (length(obj_expr) == 1) {
-            c()
-        } else {
-            sapply(
-                2:length(obj_expr),
-                function(index) {
-                    parse_expr(
-                        obj_expr[[index]] |> new_quosure(),
-                        bound_names
-                    )
-                }
-            )
-        }
+        sapply(
+            2:length(obj_expr),
+            function(index) {
+                parse_expr(
+                    obj_expr[[index]] |> new_quosure(),
+                    bound_names
+                )
+            }
+        )
+    }
 
-        if (func_str == "(") {
-            sprintf("(%s)", paste0(arguments, collapse = ", "))
-        } else if (func_is_infix) {
-            paste(
-                arguments[1],
-                func_str,
-                arguments[2:length(arguments)]
-            )
-        } else {
-            sprintf(
-                "%s(%s)",
-                func_str,
-                paste0(arguments, collapse = ", ")
-            )
-        }
+    if (func_str == "(") {
+        sprintf("(%s)", paste0(arguments, collapse = ", "))
+    } else if (func_is_infix) {
+        paste(
+            arguments[1],
+            func_str,
+            arguments[2:length(arguments)]
+        )
+    } else {
+        sprintf(
+            "%s(%s)",
+            func_str,
+            paste0(arguments, collapse = ", ")
+        )
     }
 }
 
