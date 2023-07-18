@@ -125,6 +125,146 @@ to_xlsform_string <- function(str) {
     )
 }
 
+parse_call <- function(obj, bound_names) {
+    obj_expr <- quo_get_expr(obj)
+
+    symbol_str <- deparse(obj_expr[[1]])
+    func_str <- NULL
+    func_is_infix <- NULL
+
+    if (symbol_str == "~") {
+        # NOTE Quosures in `rlang` represent {{ x }} as formulas:
+        #
+        # >>> x <- "foo"
+        # >>> quo({{ x }} == 3)
+        # <quosure>
+        # expr: ^(^"foo") == 3
+        # env:  global
+        # >>> quo({{ x }} == 3) |> quo_get_expr()
+        # (~"foo") == 3
+        #
+        # So essentially we want to treat `~` as variable lookup.
+        #
+
+        if (length(obj_expr) != 2) {
+            stop(sprintf(
+                paste("Expression should consist of `~` and a",
+                      "string but it is '%s'."),
+                deparse(obj_expr)
+            ))
+        }
+
+        func_str <- "~"
+        func_is_infix <- FALSE
+    } else if (symbol_str %in% c("==", "!=", "&", "|", "<=", "<",
+                                 ">=", ">", "+", "-", "*", "/",
+                                 "%%")) {
+        if (symbol_str == "==") {
+            func_str <- "="
+        } else if (symbol_str == "&") {
+            func_str <- "and"
+        } else if (symbol_str == "|") {
+            func_str <- "or"
+        } else if (symbol_str == "/") {
+            func_str <- "div"
+        } else if (symbol_str == "%%") {
+            func_str <- "mod"
+        } else {
+            func_str <- symbol_str
+        }
+
+        func_is_infix <- TRUE
+    } else if (symbol_str == "(") {
+        func_str <- symbol_str
+        func_is_infix <- FALSE
+    } else if (symbol_str %in% c("ifelse", "!")) {
+        if (symbol_str == "ifelse") {
+            func_str <- "if"
+        } else if (symbol_str == "!") {
+            func_str <- "not"
+        }
+
+        func_is_infix <- FALSE
+    } else {
+        # The symbol must be a function name recognized by
+        # SurveyCTO.  The function `to_surveycto_function` will
+        # panic otherwise.
+        #
+        func_str <- to_surveycto_function(symbol_str)
+        func_is_infix <- FALSE
+    }
+
+    if (func_str == "~") {
+        sprintf("${%s}", obj_expr[[2]])
+    } else {
+        arguments <- if (length(obj_expr) == 1) {
+            c()
+        } else {
+            sapply(
+                2:length(obj_expr),
+                function(index) {
+                    parse_expr(
+                        obj_expr[[index]] |> new_quosure(),
+                        bound_names
+                    )
+                }
+            )
+        }
+
+        if (func_str == "(") {
+            sprintf("(%s)", paste0(arguments, collapse = ", "))
+        } else if (func_is_infix) {
+            paste(
+                arguments[1],
+                func_str,
+                arguments[2:length(arguments)]
+            )
+        } else {
+            sprintf(
+                "%s(%s)",
+                func_str,
+                paste0(arguments, collapse = ", ")
+            )
+        }
+    }
+}
+
+parse_symbol <- function(obj, bound_names) {
+    symbol_str <- quo_text(obj)
+
+    if (symbol_str == ".") {
+        symbol_str
+    } else {
+        # The symbol is a variable name.  We check if the name has
+        # been bound already.
+        #
+        if (!(symbol_str %in% bound_names)) {
+            stop(sprintf(
+                "Variable '%s' is used but not defined.",
+                symbol_str
+            ))
+        }
+
+        sprintf("${%s}", symbol_str)
+    }
+}
+
+parse_value <- function(obj) {
+    value <- quo_get_expr(obj)
+
+    if (typeof(value) %in% c("double", "integer")) {
+        value
+    } else if (typeof(value) == "character") {
+        to_xlsform_string(value)
+    } else {
+        stop(sprintf(
+            "Object '%s' has unrecognized type: %s.",
+            deparse(value),
+            typeof(value)
+        ))
+    }
+}
+
 parse_expr <- function(obj, bound_names) {
     if (!is_quosure(obj)) {
         stop(sprintf(
@@ -134,138 +274,10 @@ parse_expr <- function(obj, bound_names) {
     }
 
     if (quo_is_call(obj)) {
-        obj_expr <- quo_get_expr(obj)
-
-        symbol_str <- deparse(obj_expr[[1]])
-        func_str <- NULL
-        func_is_infix <- NULL
-
-        if (symbol_str == "~") {
-            # NOTE Quosures in `rlang` represent {{ x }} as formulas:
-            #
-            # >>> x <- "foo"
-            # >>> quo({{ x }} == 3)
-            # <quosure>
-            # expr: ^(^"foo") == 3
-            # env:  global
-            # >>> quo({{ x }} == 3) |> quo_get_expr()
-            # (~"foo") == 3
-            #
-            # So essentially we want to treat `~` as variable lookup.
-            #
-
-            if (length(obj_expr) != 2) {
-                stop(sprintf(
-                    paste("Expression should consist of `~` and a",
-                          "string but it is '%s'."),
-                    deparse(obj_expr)
-                ))
-            }
-
-            func_str <- "~"
-            func_is_infix <- FALSE
-        } else if (symbol_str %in% c("==", "!=", "&", "|", "<=", "<",
-                                     ">=", ">", "+", "-", "*", "/",
-                                     "%%")) {
-            if (symbol_str == "==") {
-                func_str <- "="
-            } else if (symbol_str == "&") {
-                func_str <- "and"
-            } else if (symbol_str == "|") {
-                func_str <- "or"
-            } else if (symbol_str == "/") {
-                func_str <- "div"
-            } else if (symbol_str == "%%") {
-                func_str <- "mod"
-            } else {
-                func_str <- symbol_str
-            }
-
-            func_is_infix <- TRUE
-        } else if (symbol_str == "(") {
-            func_str <- symbol_str
-            func_is_infix <- FALSE
-        } else if (symbol_str %in% c("ifelse", "!")) {
-            if (symbol_str == "ifelse") {
-                func_str <- "if"
-            } else if (symbol_str == "!") {
-                func_str <- "not"
-            }
-
-            func_is_infix <- FALSE
-        } else {
-            # The symbol must be a function name recognized by
-            # SurveyCTO.  The function `to_surveycto_function` will
-            # panic otherwise.
-            #
-            func_str <- to_surveycto_function(symbol_str)
-            func_is_infix <- FALSE
-        }
-
-        if (func_str == "~") {
-            sprintf("${%s}", obj_expr[[2]])
-        } else {
-            arguments <- if (length(obj_expr) == 1) {
-                c()
-            } else {
-                sapply(
-                    2:length(obj_expr),
-                    function(index) {
-                        parse_expr(
-                            obj_expr[[index]] |> new_quosure(),
-                            bound_names
-                        )
-                    }
-                )
-            }
-
-            if (func_str == "(") {
-                sprintf("(%s)", paste0(arguments, collapse = ", "))
-            } else if (func_is_infix) {
-                paste(
-                    arguments[1],
-                    func_str,
-                    arguments[2:length(arguments)]
-                )
-            } else {
-                sprintf(
-                    "%s(%s)",
-                    func_str,
-                    paste0(arguments, collapse = ", ")
-                )
-            }
-        }
+        parse_call(obj, bound_names)
     } else if (quo_is_symbol(obj)) {
-        symbol_str <- quo_text(obj)
-
-        if (symbol_str == ".") {
-            symbol_str
-        } else {
-            # The symbol is a variable name.  We check if the name has
-            # been bound already.
-            #
-            if (!(symbol_str %in% bound_names)) {
-                stop(sprintf(
-                    "Variable '%s' is used but not defined.",
-                    symbol_str
-                ))
-            }
-
-            sprintf("${%s}", symbol_str)
-        }
+        parse_symbol(obj, bound_names)
     } else {
-        value <- quo_get_expr(obj)
-
-        if (typeof(value) %in% c("double", "integer")) {
-            value
-        } else if (typeof(value) == "character") {
-            to_xlsform_string(value)
-        } else {
-            stop(sprintf(
-                "Object '%s' has unrecognized type: %s.",
-                deparse(value),
-                typeof(value)
-            ))
-        }
+        parse_value(obj)
     }
 }
