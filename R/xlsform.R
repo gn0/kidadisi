@@ -1,6 +1,6 @@
-require("rlang")
-require("dplyr")
-require("writexl")
+require(rlang)
+require(dplyr)
+require(writexl)
 
 parse_form_version <- function(obj) {
     if (!is_quosure(obj)) {

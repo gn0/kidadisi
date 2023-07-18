@@ -1,4 +1,4 @@
-require("rlang")
+require(rlang)
 
 #' Postpone the evaluation of arguments whose value is an expression.
 #'

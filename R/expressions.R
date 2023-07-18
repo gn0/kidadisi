@@ -1,3 +1,4 @@
+require(rlang)
 
 # This list of function names comes from the SurveyCTO documentation:
 #
