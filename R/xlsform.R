@@ -2,29 +2,6 @@ require("rlang")
 require("dplyr")
 require("writexl")
 
-parse_form_id <- function(obj) {
-    if (!is_quosure(obj)) {
-        stop(sprintf(
-            "Argument must be a quosure but its type is '%s'.",
-            typeof(obj)
-        ))
-    }
-
-    if (quo_is_call(obj)) {
-        result <- NULL
-    } else if (quo_is_symbol(obj)) {
-        result <- quo_text(obj)
-    } else {
-        result <- quo_get_expr(obj) |> as.character()
-    }
-
-    if (is.null(result) || grepl("[^A-Za-z0-9_]", result)) {
-        stop("The form ID can only contain letters, numbers, and '_'.")
-    }
-
-    result
-}
-
 parse_form_version <- function(obj) {
     if (!is_quosure(obj)) {
         stop(sprintf(
@@ -471,7 +448,7 @@ survey_to_xlsform <- function(obj) {
     }
 
     settings <- tibble(
-        form_id = parse_form_id(obj[["form_id"]]),
+        form_id = parse_identifier(obj[["form_id"]]),
         form_version = parse_form_version(obj[["form_version"]]),
         form_title = obj[["form_title"]]
     )
