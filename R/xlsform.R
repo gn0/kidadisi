@@ -391,7 +391,7 @@ parse_survey <- function(obj,
             } else if (!is.null(type)) {
 
                 if (type[[1]] %in% c("select_one", "select_multiple")) {
-                    choice_list <- deparse(type[[2]])
+                    choice_list <- quo_text(type[[2]])
 
                     if (!(choice_list %in% known_choice_lists)) {
                         stop(sprintf(
