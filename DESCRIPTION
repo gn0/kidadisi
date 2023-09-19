@@ -1,0 +1,25 @@
+Type: Package
+Package: kidadisi
+Title: Generate XLSForm surveys for SurveyCTO or KoboToolbox
+Description: Generate XLSForm surveys for SurveyCTO or KoboToolbox.
+Version: 0.1.0
+Authors@R: c(person("Gabor", "Nyeki",
+                    email = "gabor.nyeki@alumni.duke.edu",
+                    role = c("aut", "cre")))
+Author: Gabor Nyeki [aut, cre]
+Maintainer: Gabor Nyeki <gabor.nyeki@alumni.duke.edu>
+URL: https://codeberg.org/gnyeki/kidadisi
+BugReports: https://codeberg.org/gnyeki/kidadisi/issues
+Depends:
+    R (>= 4.3.0)
+Imports:
+    dplyr (>= 1.1.2),
+    rlang (>= 1.1.0),
+    writexl (>= 1.4.2)
+Suggests:
+License: GPL-3
+Encoding: UTF-8
+LazyData: false
+Roxygen: list(markdown = TRUE)
+Language: en-US
+RoxygenNote: 7.2.3

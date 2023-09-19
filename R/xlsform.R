@@ -468,6 +468,7 @@ survey_to_xlsform <- function(obj) {
     sheets
 }
 
+#' @export
 write_xlsform <- function(obj, filename) {
     obj |>
         survey_to_xlsform() |>
