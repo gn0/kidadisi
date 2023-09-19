@@ -8,6 +8,12 @@ The spiritual predecessor of this package is [Honeybee](https://github.com/gn0/h
 Unlike Honeybee, Kidadisi aims to work with tooling such as [RStudio](https://posit.co/products/open-source/rstudio/) which research teams may already be familiar with.
 However, Kidadisi works in any R environment and by no means requires RStudio.
 
+## Table of contents
+
+1. [How to install](#how-to-install)
+2. [Example](#example)
+3. [Useful resources](#useful-resources)
+
 ## How to install
 
 Open the R console and enter the following:
