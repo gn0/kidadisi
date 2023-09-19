@@ -21,8 +21,8 @@ args <- function(...) {
 #' @param ... Form contents created using the functions 'ChoiceList',
 #'     'Ask', 'Note', 'Calculate', 'CalculateHere', 'If', 'IfElse',
 #'     'Group', 'TimedGroup', and 'Repeat'.
-#' @return A list object that can be processed by the functions
-#'     'survey_to_xlsform' or 'write_xlsform'.
+#' @return A list object that can be processed by the function
+#'     'write_xlsform'.
 #' @examples
 #' form_definition <- Survey(
 #'   form_id = foo_v1,
