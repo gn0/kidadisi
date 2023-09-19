@@ -126,7 +126,7 @@ to_xlsform_string <- function(str) {
 }
 
 parse_call <- function(obj, bound_names) {
-    obj_expr <- quo_get_expr(obj)
+    obj_expr <- rlang::quo_get_expr(obj)
 
     symbol_str <- deparse(obj_expr[[1]])
     func_str <- NULL
@@ -206,7 +206,7 @@ parse_call <- function(obj, bound_names) {
             2:length(obj_expr),
             function(index) {
                 parse_expr(
-                    obj_expr[[index]] |> new_quosure(),
+                    obj_expr[[index]] |> rlang::new_quosure(),
                     bound_names
                 )
             }
@@ -231,7 +231,7 @@ parse_call <- function(obj, bound_names) {
 }
 
 parse_symbol <- function(obj, bound_names) {
-    symbol_str <- quo_text(obj)
+    symbol_str <- rlang::quo_text(obj)
 
     if (symbol_str == ".") {
         symbol_str
@@ -251,7 +251,7 @@ parse_symbol <- function(obj, bound_names) {
 }
 
 parse_value <- function(obj) {
-    value <- quo_get_expr(obj)
+    value <- rlang::quo_get_expr(obj)
 
     if (typeof(value) %in% c("double", "integer")) {
         value
@@ -267,16 +267,16 @@ parse_value <- function(obj) {
 }
 
 parse_expr <- function(obj, bound_names) {
-    if (!is_quosure(obj)) {
+    if (!rlang::is_quosure(obj)) {
         stop(sprintf(
             "First argument must be a quosure but its type is '%s'.",
             typeof(obj)
         ))
     }
 
-    if (quo_is_call(obj)) {
+    if (rlang::quo_is_call(obj)) {
         parse_call(obj, bound_names)
-    } else if (quo_is_symbol(obj)) {
+    } else if (rlang::quo_is_symbol(obj)) {
         parse_symbol(obj, bound_names)
     } else {
         parse_value(obj)

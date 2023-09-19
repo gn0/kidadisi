@@ -3,19 +3,19 @@ require(dplyr)
 require(writexl)
 
 parse_form_version <- function(obj) {
-    if (!is_quosure(obj)) {
+    if (!rlang::is_quosure(obj)) {
         stop(sprintf(
             "Argument must be a quosure but its type is '%s'.",
             typeof(obj)
         ))
     }
 
-    if (quo_is_call(obj)) {
+    if (rlang::quo_is_call(obj)) {
         result <- NULL
-    } else if (quo_is_symbol(obj)) {
-        result <- quo_text(obj)
+    } else if (rlang::quo_is_symbol(obj)) {
+        result <- rlang::quo_text(obj)
     } else {
-        result <- quo_get_expr(obj) |> as.character()
+        result <- rlang::quo_get_expr(obj) |> as.character()
     }
 
     if (!is.null(result) && grepl("^[0-9]+$", result)) {
@@ -25,25 +25,25 @@ parse_form_version <- function(obj) {
     } else {
         stop(paste(
             "Form version must be either an integer or 'auto' but it",
-            sprintf("is '%s'.", quo_text(obj))
+            sprintf("is '%s'.", rlang::quo_text(obj))
         ))
     }
 }
 
 parse_identifier <- function(obj) {
-    if (!is_quosure(obj)) {
+    if (!rlang::is_quosure(obj)) {
         stop(sprintf(
             "Argument must be a quosure but its type is '%s'.",
             typeof(obj)
         ))
     }
 
-    result <- if (quo_is_call(obj)) {
+    result <- if (rlang::quo_is_call(obj)) {
         NULL
-    } else if (quo_is_symbol(obj)) {
-        quo_text(obj)
+    } else if (rlang::quo_is_symbol(obj)) {
+        rlang::quo_text(obj)
     } else {
-        quo_get_expr(obj) |> as.character()
+        rlang::quo_get_expr(obj) |> as.character()
     }
 
     if (!is.null(result) && grepl("^[A-Za-z_][A-Za-z_0-9]*$", result)) {
@@ -55,7 +55,7 @@ parse_identifier <- function(obj) {
                 "consist of letters, numbers, and '_', but it is",
                 "'%s' instead."
             ),
-            if (is.null(result)) { quo_text(obj) } else { result }
+            if (is.null(result)) { rlang::quo_text(obj) } else { result }
         ))
     }
 }
@@ -68,13 +68,13 @@ rows_to_data_frame <- function(rows) {
             } else {
                 cell
             }
-        }) |> as_tibble()
+        }) |> dplyr::as_tibble()
     }) |>
-        do.call("bind_rows", args = _)
+        do.call(dplyr::bind_rows, args = _)
 }
 
 row_args <- function(obj, known_variables) {
-    if (!is_quosures(obj)) {
+    if (!rlang::is_quosures(obj)) {
         stop(sprintf(
             paste(
                 "First argument must be a list of quosures but its",
@@ -86,7 +86,7 @@ row_args <- function(obj, known_variables) {
 
     mapply(
         function(arg_name, arg_value) {
-            if (quo_is_symbolic(arg_value)) {
+            if (rlang::quo_is_symbolic(arg_value)) {
                 if (arg_name %in% c("calculation", "constraint",
                                     "relevance", "repeat_count")) {
                     parse_expr(
@@ -94,10 +94,10 @@ row_args <- function(obj, known_variables) {
                         bound_names = known_variables
                     )
                 } else {
-                    quo_text(arg_value)
+                    rlang::quo_text(arg_value)
                 }
             } else {
-                quo_get_expr(arg_value) |> eval()
+                rlang::quo_get_expr(arg_value) |> eval()
             }
         },
         names(obj),
@@ -368,7 +368,7 @@ parse_survey <- function(obj,
             } else if (!is.null(type)) {
 
                 if (type[[1]] %in% c("select_one", "select_multiple")) {
-                    choice_list <- quo_text(type[[2]])
+                    choice_list <- rlang::quo_text(type[[2]])
 
                     if (!(choice_list %in% known_choice_lists)) {
                         stop(sprintf(
@@ -447,7 +447,7 @@ survey_to_xlsform <- function(obj) {
         stop("Input must be created with the Survey() function.")
     }
 
-    settings <- tibble(
+    settings <- dplyr::tibble(
         form_id = parse_identifier(obj[["form_id"]]),
         form_version = parse_form_version(obj[["form_version"]]),
         form_title = obj[["form_title"]]
@@ -472,5 +472,5 @@ survey_to_xlsform <- function(obj) {
 write_xlsform <- function(obj, filename) {
     obj |>
         survey_to_xlsform() |>
-        write_xlsx(filename)
+        writexl::write_xlsx(filename)
 }

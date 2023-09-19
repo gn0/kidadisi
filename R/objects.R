@@ -3,7 +3,7 @@ require(rlang)
 #' Postpone the evaluation of arguments whose value is an expression.
 #'
 args <- function(...) {
-    enquos(...)
+    rlang::enquos(...)
 }
 
 #' Create a survey definition.
@@ -62,8 +62,8 @@ args <- function(...) {
 Survey <- function(form_id, form_version, form_title, ...) {
     list(
         .type = "survey",
-        form_id = enquo(form_id),
-        form_version = enquo(form_version),
+        form_id = rlang::enquo(form_id),
+        form_version = rlang::enquo(form_version),
         form_title = form_title,
         block = c(...)
     )
@@ -118,7 +118,7 @@ Survey <- function(form_id, form_version, form_title, ...) {
 ChoiceList <- function(name, ...) {
     list(list(
         .type = "choice_list",
-        name = enquo(name),
+        name = rlang::enquo(name),
         block = c(...)
     ))
 }
@@ -141,7 +141,7 @@ Choice <- function(value, label, ...) {
 If <- function(cond, block) {
     list(list(
         .type = "if",
-        cond = enquo(cond),
+        cond = rlang::enquo(cond),
         block = block
     ))
 }
@@ -150,7 +150,7 @@ If <- function(cond, block) {
 IfElse <- function(cond, if_block, else_block) {
     list(list(
         .type = "ifelse",
-        cond = enquo(cond),
+        cond = rlang::enquo(cond),
         if_block = if_block,
         else_block = else_block
     ))
@@ -165,7 +165,7 @@ Match <- function(name, ...) {
 Group <- function(name, label, block, ...) {
     list(list(
         .type = "group",
-        name = enquo(name),
+        name = rlang::enquo(name),
         label = label,
         block = block,
         args = args(...)
@@ -174,7 +174,7 @@ Group <- function(name, label, block, ...) {
 
 #' @export
 TimedGroup <- function(name, label, block, ...) {
-    name <- enquo(name) |> parse_identifier()
+    name <- rlang::enquo(name) |> parse_identifier()
 
     start_name <- paste0(name, "_start")
     end_name <- paste0(name, "_end")
@@ -190,7 +190,7 @@ TimedGroup <- function(name, label, block, ...) {
 Repeat <- function(name, label, block, ...) {
     list(list(
         .type = "repeat",
-        name = enquo(name),
+        name = rlang::enquo(name),
         label = label,
         block = block,
         args = args(...)
@@ -213,7 +213,7 @@ Repeat <- function(name, label, block, ...) {
 Ask <- function(name, type, label, ...) {
     list(list(
         .type = "survey_row",
-        name = enquo(name),
+        name = rlang::enquo(name),
         type = type,
         label = label,
         args = args(...)
@@ -232,12 +232,12 @@ Text <- function() {
 
 #' @export
 SelectOne <- function(list_name) {
-    list("select_one", enquo(list_name))
+    list("select_one", rlang::enquo(list_name))
 }
 
 #' @export
 SelectMultiple <- function(list_name) {
-    list("select_multiple", enquo(list_name))
+    list("select_multiple", rlang::enquo(list_name))
 }
 
 #' @export
@@ -264,7 +264,7 @@ Geopoint <- function() {
 Note <- function(name, label, ...) {
     list(list(
         .type = "survey_row",
-        name = enquo(name),
+        name = rlang::enquo(name),
         type = "note",
         label = label,
         args = args(...)
@@ -275,9 +275,9 @@ Note <- function(name, label, ...) {
 Calculate <- function(name, calculation, ...) {
     list(list(
         .type = "survey_row",
-        name = enquo(name),
+        name = rlang::enquo(name),
         type = list("calculate"),
-        calculation = enquo(calculation),
+        calculation = rlang::enquo(calculation),
         args = args(...)
     ))
 }
@@ -286,9 +286,9 @@ Calculate <- function(name, calculation, ...) {
 CalculateHere <- function(name, calculation, ...) {
     list(list(
         .type = "survey_row",
-        name = enquo(name),
+        name = rlang::enquo(name),
         type = list("calculate_here"),
-        calculation = enquo(calculation),
+        calculation = rlang::enquo(calculation),
         args = args(...)
     ))
 }
