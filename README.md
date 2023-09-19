@@ -1,7 +1,12 @@
-# Kidadisi: an R package for generating XLSForm surveys
+# Kidadisi: building XLSForm surveys
 
-Kidadisi is an R package for generating [XLSForm](https://xlsform.org/) surveys.
-This is useful because [SurveyCTO](https://www.surveycto.com/) and [KoboToolbox](https://www.kobotoolbox.org/) both support XLSForm as their survey description format.
+Kidadisi is an R package to build survey definitions and use those definitions to generate [XLSForm](https://xlsform.org/) questionnaires.
+XLSForm is a portable format that is understood by both [SurveyCTO](https://www.surveycto.com/) and [KoboToolbox](https://www.kobotoolbox.org/).
+The goal of this package is to make it easier to specify and edit surveys and track them in a version control system.
+
+The spiritual predecessor of this package is [Honeybee](https://github.com/gn0/honeybee/) which transpiled survey definitions, written in a domain-specific language, into XLSForm.
+Unlike Honeybee, Kidadisi aims to work with tooling such as [RStudio](https://posit.co/products/open-source/rstudio/) which research teams may already be familiar with.
+However, Kidadisi works in any R environment and by no means requires RStudio.
 
 ## How to install
 
