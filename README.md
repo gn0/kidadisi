@@ -88,4 +88,16 @@ In the `settings` worksheet:
 |---------|--------------|------------|
 | foo_v1  | 2309191945   | Foo v1     |
 
+## Useful resources
+
+KoboToolbox:
+
+- [Custom Formatting in Web Forms](https://support.kobotoolbox.org/custom_format_web.html)
+- [How to create a dropdown list in KoboToolbox as seen in Excel?](https://community.kobotoolbox.org/t/how-to-create-a-drop-down-list-in-kobotoolbox-as-seen-in-excel/943)
+
+SurveyCTO:
+
+- [Using expressions in your forms: a reference for all operators and functions](https://docs.surveycto.com/02-designing-forms/01-core-concepts/09.expressions.html)
+- [Pre-loading data into a form](https://docs.surveycto.com/02-designing-forms/03-advanced-topics/03.preloading.html)
+- [Loading multiple-choice options from pre-loaded data](https://docs.surveycto.com/02-designing-forms/03-advanced-topics/04.search-and-select.html)
 
