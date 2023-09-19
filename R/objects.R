@@ -48,11 +48,14 @@ args <- function(...) {
 #'         "Have you eaten any red vegetables?",
 #'         hint = "Tomatoes are technically fruits."
 #'       ),
-#'       Ask(
-#'         vegetables_red_count,
-#'         Integer(),
-#'         "How many kinds of red vegetables have you eaten?",
-#'         constraint = . > 0 & . < 100
+#'       If(
+#'         vegetables_red == 1,
+#'         Ask(
+#'           vegetables_red_count,
+#'           Integer(),
+#'           "How many kinds of red vegetables have you eaten?",
+#'           constraint = . > 0 & . < 100
+#'         )
 #'       )
 #'     )
 #'   )

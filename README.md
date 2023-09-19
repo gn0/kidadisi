@@ -44,11 +44,14 @@ form_definition <- Survey(
         "Have you eaten any red vegetables?",
         hint = "Tomatoes are technically fruits."
       ),
-      Ask(
-        vegetables_red_count,
-        Integer(),
-        "How many kinds of red vegetables have you eaten?",
-        constraint = . > 0 & . < 100
+      If(
+        vegetables_red == 1,
+        Ask(
+            vegetables_red_count,
+            Integer(),
+            "How many kinds of red vegetables have you eaten?",
+            constraint = . > 0 & . < 100
+        )
       )
     )
   )
@@ -57,15 +60,19 @@ form_definition <- Survey(
 form_definition |> write_xlsform("foo_v1.xlsx")
 ```
 
+The resulting survey will render like this with KoboToolbox:
+
+![Screenshot of the example survey](./examples/screenshot.png)
+
 The output file, `foo_v1.xlsx`, will contain the following.
 In the `survey` worksheet:
 
-| name                 | type              | label                                            | required | hint                             | relevance         | constraint        |
-|----------------------|-------------------|--------------------------------------------------|----------|----------------------------------|-------------------|-------------------|
-| name                 | text              | First and last name:                             | yes      |                                  |                   |                   |
-| vegetables           | select_one yes_no | Have you eaten your vegetables?                  | yes      |                                  |                   |                   |
-| vegetables_red       | select_one yes_no | Have you eaten any red vegetables?               | yes      | Tomatoes are technically fruits. | ${vegetables} = 1 |                   |
-| vegetables_red_count | integer           | How many kinds of red vegetables have you eaten? | yes      |                                  | ${vegetables} = 1 | . > 0 and . < 100 |
+| name                 | type              | label                                            | required | hint                             | relevance                                       | constraint        |
+|----------------------|-------------------|--------------------------------------------------|----------|----------------------------------|-------------------------------------------------|-------------------|
+| name                 | text              | First and last name:                             | yes      |                                  |                                                 |                   |
+| vegetables           | select_one yes_no | Have you eaten your vegetables?                  | yes      |                                  |                                                 |                   |
+| vegetables_red       | select_one yes_no | Have you eaten any red vegetables?               | yes      | Tomatoes are technically fruits. | ${vegetables} = 1                               |                   |
+| vegetables_red_count | integer           | How many kinds of red vegetables have you eaten? | yes      |                                  | (${vegetables} = 1) and (${vegetables_red} = 1) | . > 0 and . < 100 |
 
 In the `choices` worksheet:
 
