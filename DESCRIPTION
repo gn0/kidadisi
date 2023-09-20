@@ -2,7 +2,7 @@ Type: Package
 Package: kidadisi
 Title: Generate XLSForm surveys for SurveyCTO or KoboToolbox
 Description: Generate XLSForm surveys for SurveyCTO or KoboToolbox.
-Version: 0.2.0
+Version: 0.2.1
 Authors@R: c(person("Gabor", "Nyeki",
                     email = "gabor.nyeki@alumni.duke.edu",
                     role = c("aut", "cre")))

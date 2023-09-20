@@ -41,21 +41,19 @@ args <- function(...) {
 #'   ),
 #'   When(
 #'     vegetables == 1,
-#'     c(
+#'     Ask(
+#'       vegetables_red,
+#'       SelectOne(yes_no),
+#'       "Have you eaten any red vegetables?",
+#'       hint = "Tomatoes are technically fruits."
+#'     ),
+#'     When(
+#'       vegetables_red == 1,
 #'       Ask(
-#'         vegetables_red,
-#'         SelectOne(yes_no),
-#'         "Have you eaten any red vegetables?",
-#'         hint = "Tomatoes are technically fruits."
-#'       ),
-#'       When(
-#'         vegetables_red == 1,
-#'         Ask(
-#'           vegetables_red_count,
-#'           Integer(),
-#'           "How many kinds of red vegetables have you eaten?",
-#'           constraint = . > 0 & . < 100
-#'         )
+#'         vegetables_red_count,
+#'         Integer(),
+#'         "How many kinds of red vegetables have you eaten?",
+#'         constraint = . > 0 & . < 100
 #'       )
 #'     )
 #'   )
@@ -141,11 +139,11 @@ Choice <- function(value, label, ...) {
 }
 
 #' @export
-When <- function(cond, block) {
+When <- function(cond, ...) {
     list(list(
         .type = "when",
         cond = rlang::enquo(cond),
-        block = block
+        block = c(...)
     ))
 }
 
