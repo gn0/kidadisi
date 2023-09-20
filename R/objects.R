@@ -10,7 +10,7 @@ args <- function(...) {
 #'
 #' @description This function creates a survey definition.  It can be
 #'     combined with the functions 'ChoiceList', 'Ask', 'Note',
-#'     'Calculate', 'CalculateHere', 'If', 'IfElse', 'Group',
+#'     'Calculate', 'CalculateHere', 'When', 'IfElse', 'Group',
 #'     'TimedGroup', and 'Repeat' in order to specify the survey.
 #' @param form_id Form identifier.
 #' @param form_version Form version.  It must either be a positive
@@ -19,7 +19,7 @@ args <- function(...) {
 #'     and time in UTC.
 #' @param form_title Form title.
 #' @param ... Form contents created using the functions 'ChoiceList',
-#'     'Ask', 'Note', 'Calculate', 'CalculateHere', 'If', 'IfElse',
+#'     'Ask', 'Note', 'Calculate', 'CalculateHere', 'When', 'IfElse',
 #'     'Group', 'TimedGroup', and 'Repeat'.
 #' @return A list object that can be processed by the function
 #'     'write_xlsform'.
@@ -39,7 +39,7 @@ args <- function(...) {
 #'     SelectOne(yes_no),
 #'     "Have you eaten your vegetables?"
 #'   ),
-#'   If(
+#'   When(
 #'     vegetables == 1,
 #'     c(
 #'       Ask(
@@ -48,7 +48,7 @@ args <- function(...) {
 #'         "Have you eaten any red vegetables?",
 #'         hint = "Tomatoes are technically fruits."
 #'       ),
-#'       If(
+#'       When(
 #'         vegetables_red == 1,
 #'         Ask(
 #'           vegetables_red_count,
@@ -141,9 +141,9 @@ Choice <- function(value, label, ...) {
 }
 
 #' @export
-If <- function(cond, block) {
+When <- function(cond, block) {
     list(list(
-        .type = "if",
+        .type = "when",
         cond = rlang::enquo(cond),
         block = block
     ))

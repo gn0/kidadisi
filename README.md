@@ -41,7 +41,7 @@ form_definition <- Survey(
     SelectOne(yes_no),
     "Have you eaten your vegetables?"
   ),
-  If(
+  When(
     vegetables == 1,
     c(
       Ask(
@@ -50,7 +50,7 @@ form_definition <- Survey(
         "Have you eaten any red vegetables?",
         hint = "Tomatoes are technically fruits."
       ),
-      If(
+      When(
         vegetables_red == 1,
         Ask(
             vegetables_red_count,

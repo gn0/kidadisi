@@ -218,7 +218,7 @@ parse_survey <- function(obj,
                 list(end_row)
             )
             known_variables <- result[["known_variables"]]
-        } else if (item_type == "if") {
+        } else if (item_type == "when") {
             cond <- parse_expr(
                 item[["cond"]],
                 bound_names = known_variables
@@ -231,7 +231,7 @@ parse_survey <- function(obj,
             )
 
             if (length(result[["choices_rows"]]) > 0) {
-                stop("If() cannot contain ChoiceList().")
+                stop("When() cannot contain ChoiceList().")
             }
 
             new_rows <- lapply(
