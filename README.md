@@ -52,10 +52,10 @@ form_definition <- Survey(
     When(
       vegetables_red == 1,
       Ask(
-          vegetables_red_count,
-          Integer(),
-          "How many kinds of red vegetables have you eaten?",
-          constraint = . > 0 & . < 100
+        vegetables_red_count,
+        Integer(),
+        "How many kinds of red vegetables have you eaten?",
+        constraint = . > 0 & . < 100
       )
     )
   )
