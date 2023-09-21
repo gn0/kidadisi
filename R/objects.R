@@ -1,12 +1,12 @@
 require(rlang)
 
-#' Postpone the evaluation of arguments whose value is an expression.
+#' Postpone the evaluation of expression-valued arguments
 #'
 args <- function(...) {
     rlang::enquos(...)
 }
 
-#' Create a survey definition.
+#' Create a survey definition
 #'
 #' @description This function creates a survey definition.  It can be
 #'     combined with the functions 'ChoiceList', 'Ask', 'Note',
@@ -70,7 +70,7 @@ Survey <- function(form_id, form_version, form_title, ...) {
     )
 }
 
-#' Define a chocie list.
+#' Create a choice list
 #'
 #' @description This function creates a choice list that can be
 #'     referenced by questions of type 'SelectOne' or 'SelectMultiple'.
@@ -124,7 +124,7 @@ ChoiceList <- function(name, ...) {
     ))
 }
 
-#' Define a choice item in a choice list.
+#' Create an item in a choice list
 #'
 #' @description This function creates a choice item.  It should be
 #'     called in the arguments passed to the function 'ChoiceList'.
@@ -138,6 +138,8 @@ Choice <- function(value, label, ...) {
     ))
 }
 
+#' Create a skip pattern with one branch
+#'
 #' @export
 When <- function(cond, ...) {
     list(list(
@@ -147,6 +149,8 @@ When <- function(cond, ...) {
     ))
 }
 
+#' Create a skip pattern with two branches
+#'
 #' @export
 IfElse <- function(cond, if_block, else_block) {
     list(list(
@@ -162,6 +166,8 @@ Match <- function(name, ...) {
     list(list(.type = "match", ...))
 }
 
+#' Create a group
+#'
 #' @export
 Group <- function(name, label, block, ...) {
     list(list(
@@ -173,6 +179,8 @@ Group <- function(name, label, block, ...) {
     ))
 }
 
+#' Create a group with a measure of survey duration
+#'
 #' @export
 TimedGroup <- function(name, label, block, ...) {
     name <- rlang::enquo(name) |> parse_identifier()
@@ -187,6 +195,8 @@ TimedGroup <- function(name, label, block, ...) {
       Calculate({{ dur_name }}, {{ end_name }} - {{ start_name }}))
 }
 
+#' Create a repeat group
+#'
 #' @export
 Repeat <- function(name, label, block, ...) {
     list(list(
@@ -198,14 +208,14 @@ Repeat <- function(name, label, block, ...) {
     ))
 }
 
-#' Define a question.
+#' Create a question
 #'
 #' @description This function creates a question.  It should be called
 #'     in the arguments passed to the function 'Survey'.
 #' @param name Unique question name.
-#' @param type The type of the question.  Typically one of 'Text()',
-#'     'Integer()', 'Geopoint()', 'Date()', 'Time()', 'DateTime()',
-#'     'SelectOne(...)', and 'SelectMultiple(...)'.
+#' @param type The type of the question.  One of 'Text()', 'Integer()',
+#'     'Decimal()', 'Range()', 'Geopoint()', 'Date()', 'Time()',
+#'     'DateTime()', 'SelectOne(...)', and 'SelectMultiple(...)'.
 #' @param label A string that states the question that we want to
 #'     display in the survey.
 #' @param ... Other named arguments, e.g., 'hint', 'constraint',
@@ -221,46 +231,119 @@ Ask <- function(name, type, label, ...) {
     ))
 }
 
+#' Specify the "integer" type for a question created with 'Ask'
+#'
 #' @export
 Integer <- function() {
     list("integer")
 }
 
+#' Specify the "decimal" type for a question created with 'Ask'
+#'
+#' @export
+Decimal <- function() {
+    list("decimal")
+}
+
+#' Specify the "range" type for a question created with 'Ask'
+#'
+#' @examples
+#' Ask(
+#'   tomato_intensity,
+#'   Range(),
+#'   "How much do you like tomatoes?",
+#'   parameters = "start=1 end=5 step=1"
+#' )
+#' @export
+Range <- function() {
+    list("range")
+}
+
+#' Specify the "text" type for a question created with 'Ask'
+#'
+#' @examples
+#' Ask(name_first, Text(), "What is your first name?")
+#'
 #' @export
 Text <- function() {
     list("text")
 }
 
+#' Specify the "select_one" type for a question created with 'Ask'
+#'
+#' @examples
+#' Ask(
+#'   paprika,
+#'   SelectOne(yes_no),
+#'   "Have you consumed any paprika in the past 24 hours?"
+#' )
 #' @export
 SelectOne <- function(list_name) {
     list("select_one", rlang::enquo(list_name))
 }
 
+#' Specify the "select_multiple" type for a question created with 'Ask'
+#'
+#' @examples
+#' # Define a choice list with various cabbages.
+#' #
+#' ChoiceList(
+#'   cabbage_species,
+#'   Choice(1, "Bok choy"),
+#'   Choice(2, "Broccoli"),
+#'   Choice(3, "Brussels sprouts"),
+#'   Choice(4, "Cauliflower"),
+#'   Choice(5, "Choy sum"),
+#'   Choice(6, "Kohlrabi"),
+#'   Choice(7, "Napa cabbage"),
+#'   Choice(8, "Rutabaga"),
+#'   Choice(9, "Savoy cabbage"),
+#'   Choice(10, "Turnip"),
+#'   Choice(99, "Other")
+#' )
+#'
+#' # Multiple-choice question about cabbages.
+#' #
+#' Ask(
+#'   favorite_cabbage,
+#'   SelectMultiple(cabbage_species),
+#'   "Which are your favorite cabbages?"
+#' )
 #' @export
 SelectMultiple <- function(list_name) {
     list("select_multiple", rlang::enquo(list_name))
 }
 
+#' Specify the "date" type for a question created with 'Ask'
+#'
 #' @export
 Date <- function() {
     list("date")
 }
 
+#' Specify the "datetime" type for a question created with 'Ask'
+#'
 #' @export
 DateTime <- function() {
     list("datetime")
 }
 
+#' Specify the "time" type for a question created with 'Ask'
+#'
 #' @export
 Time <- function() {
     list("time")
 }
 
+#' Specify the "geopoint" type for a question created with 'Ask'
+#'
 #' @export
 Geopoint <- function() {
     list("geopoint")
 }
 
+#' Create a "note" field
+#'
 #' @export
 Note <- function(name, label, ...) {
     list(list(
@@ -272,6 +355,8 @@ Note <- function(name, label, ...) {
     ))
 }
 
+#' Create a "calculate" field
+#'
 #' @export
 Calculate <- function(name, calculation, ...) {
     list(list(
@@ -283,6 +368,8 @@ Calculate <- function(name, calculation, ...) {
     ))
 }
 
+#' Create a "calculate_here" field
+#'
 #' @export
 CalculateHere <- function(name, calculation, ...) {
     list(list(
@@ -293,4 +380,3 @@ CalculateHere <- function(name, calculation, ...) {
         args = args(...)
     ))
 }
-
