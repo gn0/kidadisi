@@ -96,6 +96,7 @@ In the `settings` worksheet:
 
 KoboToolbox:
 
+- [Restricting Text Responses With Regular Expressions](https://support.kobotoolbox.org/restrict_responses.html)
 - [Custom Formatting in Web Forms](https://support.kobotoolbox.org/custom_format_web.html)
 - [How to create a dropdown list in KoboToolbox as seen in Excel?](https://community.kobotoolbox.org/t/how-to-create-a-drop-down-list-in-kobotoolbox-as-seen-in-excel/943)
 
