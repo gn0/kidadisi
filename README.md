@@ -1,8 +1,14 @@
-# Kidadisi: building XLSForm surveys
+# Kidadisi: build questionnaires by writing R code
 
 Kidadisi is an R package to build survey definitions and use those definitions to generate [XLSForm](https://xlsform.org/) questionnaires.
 XLSForm is a portable format that is understood by both [SurveyCTO](https://www.surveycto.com/) and [KoboToolbox](https://www.kobotoolbox.org/).
-The goal of this package is to make it easier to specify and edit surveys and track them in a version control system.
+The goals of Kidadisi are:
+
+- **Modularity.**
+  - _Reuse choice lists._  Research projects often roll out multiple questionnaires that use the same choice lists, so that each questionnaire codes answers the same way.  You copy and paste your choice lists, but later realize that you need to add a choice item or change the phrasing of a choice label.  Rather than having to manually edit each questionnaire, define choice lists once instead and include the same definitions in each questionnaire.
+  - _Reuse questions._  Sometimes the same question or series of questions is asked multiple times in slightly different ways in a questionnaire.  For example, phone numbers with data validation, or multiple-step preloads.  You copy and paste your questions, but later realize that you want to make a change to the phrasing or to the constraints on the answer.  Rather than having to sift through multiple occurrences of the question in order to make sure that they are consistent with each other, define the question as a function instead.  The function can hide the common elements of each occurrence and it lets you focus on those elements that are different.
+- **Early error reporting.**  Don't wait for the server to tell you that you made mistakes.  Let R tell you if you made a typo in a variable or choice list name, or if you used the same variable name twice.
+- **Amenability to version control.**  Use Git or your favorite version control system to track changes to your questionnaires.
 
 The spiritual predecessor of this package is [Honeybee](https://github.com/gn0/honeybee/) which transpiled survey definitions, written in a domain-specific language, into XLSForm.
 Unlike Honeybee, Kidadisi aims to work with tooling such as [RStudio](https://posit.co/products/open-source/rstudio/) which research teams may already be familiar with.
