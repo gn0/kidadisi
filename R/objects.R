@@ -161,6 +161,10 @@ IfElse <- function(cond, if_block, else_block) {
     ))
 }
 
+#' Create a skip pattern with one branch for each choice item
+#'
+#' @description
+#' This function is not yet implemented.
 #' @export
 Match <- function(name, ...) {
     list(list(.type = "match", ...))
