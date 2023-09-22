@@ -10,9 +10,19 @@ SelectOne(list_name)
 Specify the "select_one" type for a question created with 'Ask'
 }
 \examples{
-Ask(
-  paprika,
-  SelectOne(yes_no),
-  "Have you consumed any paprika in the past 24 hours?"
+Survey(
+  form_id = juice_survey,
+  form_version = auto,
+  form_title = "Survey on Juices",
+  ChoiceList(
+    yes_no,
+    Choice(1, "Yes"),
+    Choice(0, "No")
+  ),
+  Ask(
+    paprika,
+    SelectOne(yes_no),
+    "Have you consumed any cucumber juice in the past 24 hours?"
+  )
 )
 }

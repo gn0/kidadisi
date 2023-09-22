@@ -11,5 +11,4 @@ Specify the "text" type for a question created with 'Ask'
 }
 \examples{
 Ask(name_first, Text(), "What is your first name?")
-
 }

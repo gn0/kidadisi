@@ -45,7 +45,7 @@ args <- function(...) {
 #'       vegetables_red,
 #'       SelectOne(yes_no),
 #'       "Have you eaten any red vegetables?",
-#'       hint = "Tomatoes are technically fruits."
+#'       hint = "Tomatoes and peppers are technically fruits."
 #'     ),
 #'     When(
 #'       vegetables_red == 1,
@@ -58,7 +58,6 @@ args <- function(...) {
 #'     )
 #'   )
 #' )
-#'
 #' @export
 Survey <- function(form_id, form_version, form_title, ...) {
     list(
@@ -79,7 +78,7 @@ Survey <- function(form_id, form_version, form_title, ...) {
 #' @param name Unique choice list name.
 #' @param ... Choices created using the function 'Choice'.
 #' @examples
-#' form_definition <- Survey(
+#' Survey(
 #'   form_id = foo_v1,
 #'   form_version = auto,
 #'   form_title = "Foo v1",
@@ -128,6 +127,27 @@ ChoiceList <- function(name, ...) {
 #'
 #' @description This function creates a choice item.  It should be
 #'     called in the arguments passed to the function 'ChoiceList'.
+#' @param value A numeric or string value that is unique to the item in
+#'     the choice list.
+#' @param label A string that describes the choice item.  This will be
+#'     displayed in the survey.
+#' @param ... Additional arguments, e.g., 'filter'.  Once
+#'     'write_xlsform' is called, these arguments will be included as
+#'     additional columns in the 'choices' worksheet of the resulting
+#'     XLSForm output.
+#' @examples
+#' ChoiceList(
+#'   soybean_foods,
+#'   Choice(1, "Steamed edamame", filter = "not_tofu"),
+#'   Choice(2, "Firm tofu", filter = "tofu"),
+#'   Choice(3, "Soft tofu", filter = "tofu"),
+#'   Choice(4, "Silken tofu", filter = "tofu"),
+#'   Choice(5, "Frozen tofu", filter = "tofu"),
+#'   Choice(6, "Egg tofu", filter = "tofu"),
+#'   Choice(7, "Soy milk", filter = "not_tofu"),
+#'   Choice(8, "Miso paste", filter = "not_tofu"),
+#'   Choice(99, "Other", filter = "other")
+#' )
 #' @export
 Choice <- function(value, label, ...) {
     list(list(
@@ -151,6 +171,43 @@ When <- function(cond, ...) {
 
 #' Create a skip pattern with two branches
 #'
+#' @param cond A Boolean expression, usually referencing responses to
+#'     previous questions or results of previous calculations.  E.g.,
+#'     'bell_pepper_count > 0'.
+#' @param if_block A vector of calls to 'Ask', 'Note', etc., that are
+#'     displayed in the survey if the expression in 'cond' is TRUE.
+#' @param else_block A vector of calls to 'Ask', 'Note', etc., that are
+#'     displayed in the survey if the expression in 'cond' is FALSE.
+#' @examples
+#' Survey(
+#'   form_id = pepper_survey,
+#'   form_version = auto,
+#'   form_title = "Survey on Peppers",
+#'   Ask(
+#'     bell_pepper_count,
+#'     Integer(),
+#'     "How many bell peppers have you eaten in the past week?"
+#'   ),
+#'   IfElse(
+#'     bell_pepper_count > 0,
+#'     # This is 'if_block':
+#'     c(
+#'       Note(
+#'         color_note,
+#'         "How many bell peppers have you eaten that were ..."
+#'       ),
+#'       Ask(red_bell_pepper_count, "... red?"),
+#'       Ask(green_bell_pepper_count, "... green?"),
+#'       Ask(yellow_bell_pepper_count, "... yellow?")
+#'     ),
+#'     # This is 'else_block':
+#'     Ask(
+#'       non_bell_pepper_count,
+#'       Integer(),
+#'       "How many peppers have you eaten that were not bell peppers?"
+#'     )
+#'   )
+#' )
 #' @export
 IfElse <- function(cond, if_block, else_block) {
     list(list(
@@ -267,7 +324,6 @@ Range <- function() {
 #'
 #' @examples
 #' Ask(name_first, Text(), "What is your first name?")
-#'
 #' @export
 Text <- function() {
     list("text")
@@ -276,10 +332,20 @@ Text <- function() {
 #' Specify the "select_one" type for a question created with 'Ask'
 #'
 #' @examples
-#' Ask(
-#'   paprika,
-#'   SelectOne(yes_no),
-#'   "Have you consumed any paprika in the past 24 hours?"
+#' Survey(
+#'   form_id = juice_survey,
+#'   form_version = auto,
+#'   form_title = "Survey on Juices",
+#'   ChoiceList(
+#'     yes_no,
+#'     Choice(1, "Yes"),
+#'     Choice(0, "No")
+#'   ),
+#'   Ask(
+#'     paprika,
+#'     SelectOne(yes_no),
+#'     "Have you consumed any cucumber juice in the past 24 hours?"
+#'   )
 #' )
 #' @export
 SelectOne <- function(list_name) {
@@ -289,29 +355,33 @@ SelectOne <- function(list_name) {
 #' Specify the "select_multiple" type for a question created with 'Ask'
 #'
 #' @examples
-#' # Define a choice list with various cabbages.
-#' #
-#' ChoiceList(
-#'   cabbage_species,
-#'   Choice(1, "Bok choy"),
-#'   Choice(2, "Broccoli"),
-#'   Choice(3, "Brussels sprouts"),
-#'   Choice(4, "Cauliflower"),
-#'   Choice(5, "Choy sum"),
-#'   Choice(6, "Kohlrabi"),
-#'   Choice(7, "Napa cabbage"),
-#'   Choice(8, "Rutabaga"),
-#'   Choice(9, "Savoy cabbage"),
-#'   Choice(10, "Turnip"),
-#'   Choice(99, "Other")
-#' )
-#'
-#' # Multiple-choice question about cabbages.
-#' #
-#' Ask(
-#'   favorite_cabbage,
-#'   SelectMultiple(cabbage_species),
-#'   "Which are your favorite cabbages?"
+#' Survey(
+#'   form_id = cabbage_survey,
+#'   form_version = auto,
+#'   form_title = "Survey on Cabbages",
+#'   # Define a choice list with various cabbages.
+#'   #
+#'   ChoiceList(
+#'     cabbage_species,
+#'     Choice(1, "Bok choy"),
+#'     Choice(2, "Broccoli"),
+#'     Choice(3, "Brussels sprouts"),
+#'     Choice(4, "Cauliflower"),
+#'     Choice(5, "Choy sum"),
+#'     Choice(6, "Kohlrabi"),
+#'     Choice(7, "Napa cabbage"),
+#'     Choice(8, "Rutabaga"),
+#'     Choice(9, "Savoy cabbage"),
+#'     Choice(10, "Turnip"),
+#'     Choice(99, "Other")
+#'   ),
+#'   # Multiple-choice question about cabbages.
+#'   #
+#'   Ask(
+#'     favorite_cabbage,
+#'     SelectMultiple(cabbage_species),
+#'     "Which are your favorite cabbages?"
+#'   )
 #' )
 #' @export
 SelectMultiple <- function(list_name) {

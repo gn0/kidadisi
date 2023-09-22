@@ -10,28 +10,32 @@ SelectMultiple(list_name)
 Specify the "select_multiple" type for a question created with 'Ask'
 }
 \examples{
-# Define a choice list with various cabbages.
-#
-ChoiceList(
-  cabbage_species,
-  Choice(1, "Bok choy"),
-  Choice(2, "Broccoli"),
-  Choice(3, "Brussels sprouts"),
-  Choice(4, "Cauliflower"),
-  Choice(5, "Choy sum"),
-  Choice(6, "Kohlrabi"),
-  Choice(7, "Napa cabbage"),
-  Choice(8, "Rutabaga"),
-  Choice(9, "Savoy cabbage"),
-  Choice(10, "Turnip"),
-  Choice(99, "Other")
-)
-
-# Multiple-choice question about cabbages.
-#
-Ask(
-  favorite_cabbage,
-  SelectMultiple(cabbage_species),
-  "Which are your favorite cabbages?"
+Survey(
+  form_id = cabbage_survey,
+  form_version = auto,
+  form_title = "Survey on Cabbages",
+  # Define a choice list with various cabbages.
+  #
+  ChoiceList(
+    cabbage_species,
+    Choice(1, "Bok choy"),
+    Choice(2, "Broccoli"),
+    Choice(3, "Brussels sprouts"),
+    Choice(4, "Cauliflower"),
+    Choice(5, "Choy sum"),
+    Choice(6, "Kohlrabi"),
+    Choice(7, "Napa cabbage"),
+    Choice(8, "Rutabaga"),
+    Choice(9, "Savoy cabbage"),
+    Choice(10, "Turnip"),
+    Choice(99, "Other")
+  ),
+  # Multiple-choice question about cabbages.
+  #
+  Ask(
+    favorite_cabbage,
+    SelectMultiple(cabbage_species),
+    "Which are your favorite cabbages?"
+  )
 )
 }

@@ -52,7 +52,7 @@ form_definition <- Survey(
       vegetables_red,
       SelectOne(yes_no),
       "Have you eaten any red vegetables?",
-      hint = "Tomatoes are technically fruits."
+      hint = "Tomatoes and peppers are technically fruits."
     ),
     When(
       vegetables_red == 1,
@@ -65,5 +65,4 @@ form_definition <- Survey(
     )
   )
 )
-
 }
