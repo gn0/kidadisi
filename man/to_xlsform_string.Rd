@@ -12,7 +12,7 @@ to_xlsform_string(str)
 \item{str}{The input string to escape.}
 }
 \value{
-\value{A string that contains an XLSForm string literal.}
+A string that contains an XLSForm string literal.
 }
 \description{
 String literals in XLSForm are written with single quotes.  This

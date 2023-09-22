@@ -105,7 +105,7 @@ to_surveycto_function <- function(str) {
 #' the beginning and the end.
 #'
 #' @param str The input string to escape.
-#' @return \value{A string that contains an XLSForm string literal.}
+#' @return A string that contains an XLSForm string literal.
 #'
 to_xlsform_string <- function(str) {
     paste0(
