@@ -9,9 +9,9 @@ check-devtools:
 	Rscript -e "devtools::check()"
 
 check-as-cran: build
-	$(eval pkg_version := \
-		$(shell cat DESCRIPTION | grep '^Version:' | cut -d' ' -f2))
-	R CMD check --as-cran "kidadisi_$(pkg_version).tar.gz"
+	ls -1t kidadisi_*.tar.gz \
+		| head -1 \
+		| xargs R CMD check --as-cran
 
 build:
 	R CMD build .
