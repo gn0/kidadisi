@@ -468,6 +468,31 @@ survey_to_xlsform <- function(obj) {
     sheets
 }
 
+#' Write a survey to an Excel file in XLSForm format
+#'
+#' @param obj A survey object created with the 'Survey' function.
+#' @param filename A string containing the output filename.
+#' @examples
+#' form_definition <- Survey(
+#'   form_id = foo_v1,
+#'   form_version = auto,
+#'   form_title = "Foo v1",
+#'   ChoiceList(
+#'     yes_no,
+#'     Choice(1, "Yes"),
+#'     Choice(0, "No")
+#'   ),
+#'   Ask(name, Text(), "First and last name:"),
+#'   Ask(zucchini, SelectOne(yes_no), "Have you eaten zucchini squash?")
+#' )
+#'
+#' \dontshow{
+#' .old_wd <- setwd(tempdir())
+#' }
+#' write_xlsform(form_definition, "foo_v1.xlsx")
+#' \dontshow{
+#' setwd(.old_wd)
+#' }
 #' @export
 write_xlsform <- function(obj, filename) {
     obj |>
