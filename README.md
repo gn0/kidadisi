@@ -26,7 +26,7 @@ Open the R console and enter the following:
 
 ```r
 install.packages("devtools")
-devtools::install_git(url = "https://codeberg.org/gnyeki/kidadisi/")
+devtools::install_git(url = "https://github.com/gn0/kidadisi/")
 ```
 
 ## Example
